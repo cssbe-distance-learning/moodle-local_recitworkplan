@@ -133,7 +133,7 @@ export class WorkPlanListView extends Component{
                             {value: "manager", text: <span><FontAwesomeIcon icon={faChalkboardTeacher} />{" Gestionnaire"}</span>},
                             ]}/>
                     <div className='d-flex justify-content-end align-items-baseline mt-3'>
-                        <label className='mr-2'>Trier par</label>
+                        <label className='me-2'>Trier par</label>
                         <select type="select" value={this.state.orderBy} className='form-control rounded' onChange={this.onOrderBy}>
                             <option value="templateid,asc">Date de création (croissant)</option>
                             <option value="templateid,desc">Date de création (décroissant)</option>
@@ -562,13 +562,13 @@ class WorkPlanAssignmentsView extends Component{
                     </ButtonGroup>}>
                     <div className='m-1 d-flex align-items-center d-block-mobile w-100-mobile flex-wrap'>
                         Filtrer par <CustomFormControl className='w-100-mobile' style={{display:'inline',width:'200px',marginRight:'10px', marginLeft:'10px'}} onChange={this.onSearch} type="search" value={this.state.queryStr} name='queryStr' placeholder="Nom, groupe..."/>
-                        Trier par <select type="select" className='form-control rounded ml-2 mr-2' style={{width:'115px'}} onChange={(e) => this.setState({sortAssignment:e.target.value})}>
+                        Trier par <select type="select" className='form-control rounded ms-2 me-2' style={{width:'115px'}} onChange={(e) => this.setState({sortAssignment:e.target.value})}>
                             <option value="lastname">Nom</option>
                             <option value="firstname">Prénom</option>
                             <option value="progress">Progrès</option>
                             <option value="enddate">Date d'échéance</option>
                         </select>
-                        <ToggleButtons className='ml-2' type="checkbox" value={this.state.filter} onChange={this.onFilterChange} options={filters}/>
+                        <ToggleButtons className='ms-2' type="checkbox" value={this.state.filter} onChange={this.onFilterChange} options={filters}/>
                     </div>
                 </CustomHeader>            
 
@@ -637,12 +637,12 @@ class WorkPlanAssignmentsView extends Component{
                                             <AssignmentFollowUp data={data} assignmentId={item.id}/>
                                         </div>
                                         <div className="p-2 text-muted d-flex" style={{alignItems: 'center', justifyContent: 'flex-end'}}>
-                                            <div className='mr-5'>
+                                            <div className='me-5'>
                                                 <CustomBadgeCompletion  stats={progressText}/>
                                                 <div className='text-muted mt-2'>{`Temps consacré: `}<strong>{UtilsDateTime.formatHours2Clocktime(nbHoursCompleted)}</strong></div>
                                             </div>
                                             
-                                            <DropdownButton as={ButtonGroup}  disabled={WorkPlanUtils.isArchived(JsNx.at(data.assignments, 0, null))} className='mr-3' bsPrefix='rounded btn btn-sm btn-outline-primary' variant='' title={<span><FontAwesomeIcon icon={faEllipsisV}  />{" "}</span>} id={`optionsAssignments${item.id}`}>
+                                            <DropdownButton as={ButtonGroup}  disabled={WorkPlanUtils.isArchived(JsNx.at(data.assignments, 0, null))} className='me-3' bsPrefix='rounded btn btn-sm btn-outline-primary' variant='' title={<span><FontAwesomeIcon icon={faEllipsisV}  />{" "}</span>} id={`optionsAssignments${item.id}`}>
                                                 <Dropdown.Item onClick={() => this.setState({editAssignment: item})}><FontAwesomeIcon icon={faPencilAlt} />{" Modifier"}</Dropdown.Item>
                                                 <Dropdown.Item disabled={data.template.type === 's'} onClick={() => this.setState({editAssignmentAdditionalHours: item})}><FontAwesomeIcon icon={faClock} />{" Heures supplémentaires"}</Dropdown.Item>
                                                 <Dropdown.Item onClick={() => this.onSetInactiveAssignment(item)}>
@@ -706,7 +706,7 @@ class WorkPlanAssignmentsView extends Component{
         let data = this.props.data;
         let assignments = data.assignments;
         for (let a of assignments){
-            if (a.completionState == flag){
+            if (a.completionState.toString() === flag.toString()){
                 count++;
             }
         }

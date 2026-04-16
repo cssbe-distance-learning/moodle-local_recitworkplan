@@ -26,8 +26,8 @@ import {ComboBoxPlus, FeedbackCtrl, ToggleButtons, ComboBox, InputNumber} from '
 import {$glVars, WorkPlanUtils} from '../common/common';
 import { JsNx, UtilsDateTime } from '../libs/utils/Utils';
 import { CustomFormControl } from './Components';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'; 
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css'; 
 import { InputTime } from '../libs/components/DateTime';
 
 export class ActivityPicker extends Component{
@@ -132,9 +132,9 @@ export class ActivityPicker extends Component{
                                             let row =
                                                 <tr key={index}>
                                                     <td>
-                                                        {item.pixUrl && <img src={item.pixUrl} className='activityicon mr-1'/>}
+                                                        {item.pixUrl && <img src={item.pixUrl} className='activityicon me-1'/>}
                                                         <a href={item.url} target='_blank'>{item.name}</a>
-                                                        <Button onClick={() => this.onAddTplAct(item)} variant="link" title="Ajouter" className="mr-2 float-right"><FontAwesomeIcon icon={faArrowRight}/></Button>
+                                                        <Button onClick={() => this.onAddTplAct(item)} variant="link" title="Ajouter" className="me-2 float-end"><FontAwesomeIcon icon={faArrowRight}/></Button>
                                                     </td>
                                                 </tr>
 
@@ -148,7 +148,7 @@ export class ActivityPicker extends Component{
                             {tmpActivityList.length > 0 && 
                                 <div className='mt-3'>
                                     <input onChange={(e) => this.setState({showActivityNoAchievement: !this.state.showActivityNoAchievement})} id={'showActivityNoAchievement'} type="checkbox" checked={this.state.showActivityNoAchievement} />
-                                    <label className="ml-2 d-inline" htmlFor={'showActivityNoAchievement'}>Afficher les activités qui n'ont pas d'achèvement</label>
+                                    <label className="ms-2 d-inline" htmlFor={'showActivityNoAchievement'}>Afficher les activités qui n'ont pas d'achèvement</label>
                                 </div>
                             }
                         </div>
@@ -169,7 +169,7 @@ export class ActivityPicker extends Component{
                                     <div key={index} data-index={index} onDragEnter={(event) => this.onDragEnter(event, item)} onDragEnd={this.onDragEnd} onDrop={(event) => this.onDropRow(event, item, index)} onDragOver={this.onDragOver}
                                         className={`dropzone ${bg} p-1 mb-1 align-items-center`} style={{display: 'grid', gridTemplateColumns: "calc(100% - 150px - 40px) 150px 40px", justifyContent: 'space-between'}}>
                                         <div style={{cursor: 'grab'}} onDragStart={(event) => this.onDragRow(event, item)} draggable="true" >
-                                            <span className='mr-2' >
+                                            <span className='me-2' >
                                                 <FontAwesomeIcon icon={faArrowsAlt} title="Déplacer l'item"/>
                                             </span>
                                             <span>
@@ -626,7 +626,7 @@ class ModalTemplateForm extends Component{
 
         let modalBody = 
             <Form noValidate validated={this.state.formValidated} onSubmit={this.onSubmit}>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="3">{"Enregistrer en tant que"}</Form.Label>
                     <Col sm="9">
                         <ToggleButtons name="state" value={[data.template.state]} onClick={this.onDataChange} disabled={data.assignments.length > 1}
@@ -637,13 +637,13 @@ class ModalTemplateForm extends Component{
                         <Form.Text className="text-muted">Ce champ devient désactivé lorsque le plan de travail contient des affectations.</Form.Text>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row} >
+                <Form.Group className='mb-3' as={Row} >
                     <Form.Label column sm="3">{"Nom"}</Form.Label>
                     <Col sm="9">
                         <CustomFormControl required={true} type="text" value={data.template.name} name="name" onChange={this.onDataChange} />
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}> 
+                <Form.Group  className='mb-3' as={Row}> 
                     <Form.Label column sm="3">{"Description"}</Form.Label>
                     <Col sm="9">
                         <ReactQuill style={{height:'250px', marginBottom: '3rem'}} className='w-100' theme="snow" 
@@ -651,7 +651,7 @@ class ModalTemplateForm extends Component{
                                 onChange={(value) => this.onDataChange({target: {value: value, name: 'description'}})} />
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="3">{"Type"}</Form.Label>
                     <Col sm="9">
                         <ToggleButtons name="type" value={[data.template.type]} onClick={this.onDataChange} 
@@ -662,13 +662,13 @@ class ModalTemplateForm extends Component{
                         </Form.Text>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="3">{"URL de communication"}</Form.Label>
                     <Col sm="9">
                         <CustomFormControl type="text" className='w-100' value={data.template.communicationUrl || ''} name="communicationUrl" onChange={this.onDataChange} />
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="3">{"Collaborateurs"}</Form.Label>
                     <Col sm="9">
                         <ComboBoxPlus multiple placeholder={"Sélectionnez votre option"} name="collaborators" value={this.state.collaborators} options={this.state.teachers} onChange={this.onDataChange} />
@@ -759,7 +759,7 @@ class ModalTemplateOptionForm extends Component{
 
         let modalBody = 
             <Form>
-            <Form.Group as={Row}>
+            <Form.Group className='mb-3' as={Row}>
                 <Form.Label column sm="6">{"Afficher le temps en retard"}</Form.Label>
                 <Col sm="6">
                     <ToggleButtons name="showHoursLate" value={[data.template.options.showHoursLate]} onClick={this.onDataChange}
@@ -769,7 +769,7 @@ class ModalTemplateOptionForm extends Component{
                             ]}/>
                 </Col>
             </Form.Group>
-            <Form.Group as={Row}>
+            <Form.Group className='mb-3' as={Row}>
                 <Form.Label column sm="6">{"Afficher le nom de la catégorie dans la liste d'activité"}</Form.Label>
                 <Col sm="6">
                     <ToggleButtons name="showCategory" value={[data.template.options.showCategory]} onClick={this.onDataChange}
@@ -779,7 +779,7 @@ class ModalTemplateOptionForm extends Component{
                             ]}/>
                 </Col>
             </Form.Group>
-            <Form.Group as={Row}>
+            <Form.Group className='mb-3' as={Row}>
                 <Form.Label column sm="6">{"Options d'affichage pour les étudiants"}</Form.Label>
                 <Col sm="6">
                     <ComboBox placeholder={"Sélectionnez votre option"} name="showStudentWorkPlan" value={data.template.options.showStudentWorkPlan} onChange={this.onDataChange} 

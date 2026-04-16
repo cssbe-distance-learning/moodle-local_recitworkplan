@@ -415,19 +415,19 @@ export class StartEndDatesFormBatchAssignment extends Component{
 
         let main = 
             <Form noValidate validated={this.state.formValidated} onSubmit={this.onSubmit}>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Date de début"}</Form.Label>
                     <Col sm="7">
                         <DateTime required onChange={this.onDataChange} name="startDate" value={this.state.data.startDate}/>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Échéance"}</Form.Label>
                     <Col sm="7">
                         <DateTime disabled={(this.props.dataProvider.template.type == 'd')} onChange={this.onDataChange} value={this.state.data.endDate} name="endDate"/>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group  as={Row}>
                     <Col sm="5"></Col>
                     <Col sm="7">
                         <Button variant="primary" className="rounded"  type="submit">{"Assigner"}</Button>
@@ -506,7 +506,7 @@ export class RythmeFormBatchAssignment extends Component{
 
         let main =
             <div>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Rythme (h/semaine)"}</Form.Label>
                     <Col sm="7">
                         <InputNumber min={0} nbDecimals={1} style={{display:'inline'}} onChange={this.onDataChange} value={this.state.data.rhythme} name='rhythme' placeholder="Rythme (h/semaine)"/>
@@ -582,13 +582,13 @@ export class AdditionalHoursFormBatchAssignment extends Component{
 
         let main =
             <div>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Heures supplémentaires"}</Form.Label>
                     <Col sm="7">
                         <InputNumber nbDecimals={1} style={{display:'inline'}} name="nbAdditionalHours" onChange={this.onDataChange} value={this.state.data.nbAdditionalHours} placeholder="Heures"/>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Raison"}</Form.Label>
                     <Col sm="7">
                         <CustomFormControl style={{display:'inline'}} max="250" name="additionalHoursReason"  onChange={this.onDataChange} type="text" value={this.state.data.additionalHoursReason}/>
@@ -678,21 +678,21 @@ export class ModalAssignmentForm extends Component{
 
         let body = 
             <Form noValidate validated={this.state.formValidated} onSubmit={this.onSubmit}>
-                <Form.Group >
+                <Form.Group className='mb-3'>
                     <Form.Label>{"Début"}</Form.Label>
                     <DateTime required={true} value={item.startDate} name="startDate" onChange={this.onDataChange} />
                     <Form.Control.Feedback type="invalid">Veuillez indiquer une date de début</Form.Control.Feedback>
                 </Form.Group>
-                <Form.Group>
+                <Form.Group className='mb-3'>
                     <Form.Label>{"Échéance"}</Form.Label>
                     <DateTime min={UtilsDateTime.formatDateTime(dateMin.getTime() / 1000, 'T')} disabled={this.props.metadata.type === 'd'} value={item.endDate} name="endDate" onChange={this.onDataChange} />
                     <Form.Text className="text-muted">Si le plan est dynamique, alors l'échéance est calculée dynamiquement.</Form.Text>
                 </Form.Group>
-                <Form.Group>
+                <Form.Group className='mb-3'>
                     <Form.Label>{"Commentaire"}</Form.Label>
                     <CustomFormControl as="textarea" rows={4} className='w-100' name="comment" value={item.comment} onChange={this.onDataChange}/>
                 </Form.Group>
-                <Form.Group>
+                <Form.Group className='mb-3'>
                     <Form.Label>{"H/semaine"}</Form.Label>
                     <InputNumber nbDecimals={1} min={0} disabled={this.props.metadata.type === 's'} value={item.nbHoursPerWeek} name="nbHoursPerWeek" onChange={this.onDataChange} />
                     <Form.Text className="text-muted">Si le plan de travail est statique, alors le rythme de travail n'est pas pris en compte.</Form.Text>
@@ -786,14 +786,14 @@ export class ModalAssignmentAdditionalHoursForm extends Component{
         let item = this.state.data;
         let body = 
             <Form>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Heures supplémentaires"}</Form.Label>
                     <Col sm="7">
-                        <InputNumber nbDecimals={1} style={{width: '80px', display: 'inline'}} className="mr-3" type="number" value={item.nbAdditionalHours} name="nbAdditionalHours" onChange={this.onDataChange} />
-                        <Form.Text className="text-muted">Le nombre peut être négatif.</Form.Text>
+                        <InputNumber nbDecimals={1} style={{width: '80px', display: 'inline'}}  type="number" value={item.nbAdditionalHours} name="nbAdditionalHours" onChange={this.onDataChange} />
+                        <Form.Text className="text-muted ms-3">Le nombre peut être négatif.</Form.Text>
                     </Col>
                 </Form.Group>
-                <Form.Group as={Row}>
+                <Form.Group className='mb-3' as={Row}>
                     <Form.Label column sm="5">{"Raison"}</Form.Label>
                     <Col sm="7">
                         <CustomFormControl style={{display:'inline'}} onChange={this.onDataChange} max="250" name="additionalHoursReason" type="text" value={item.additionalHoursReason}/>
@@ -804,7 +804,7 @@ export class ModalAssignmentAdditionalHoursForm extends Component{
         let modalFooter = 
         <ButtonGroup>
                 <Button variant='secondary' className='rounded' onClick={this.onClose}>Annuler</Button>
-                <Button disabled={!this.state.flags.dataChanged || item.additionalHoursReason.length == 0} variant='success' className='ml-2 rounded' onClick={this.onSave}>Enregistrer</Button>
+                <Button disabled={!this.state.flags.dataChanged || item.additionalHoursReason.length == 0} variant='success' className='ms-2 rounded' onClick={this.onSave}>Enregistrer</Button>
         </ButtonGroup>;
 
 

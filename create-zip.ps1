@@ -17,7 +17,7 @@ function Create-Zipfile($zipName, $pluginName, $pluginVersion){
 	}
 
 	#zip the folder except the folders .cache and node_modules
-	& "c:\Program Files\7-Zip\7z.exe" a -mx "$zipFile" "src\*"-mx0 -xr!"src\react\.cache" -xr!"src\react\node_modules" -xr!"src\react\src" -xr!"src\react\.babelrc" -xr!"src\react\package.json" -xr!"src\react\package-lock.json"
+	& "c:\Program Files\7-Zip\7z.exe" a -mx "$zipFile" "src\*"-mx0 -xr!"src\react\.cache" -xr!"src\react\.parcel-cache" -xr!"src\react\node_modules"  -xr!"src\react\.babelrc" -xr!"src\react\package.json" -xr!"src\react\package-lock.json"
 
 	#set the plugin name
 	& "c:\Program Files\7-Zip\7z.exe" rn "$zipFile" "src\" "$pluginName\"

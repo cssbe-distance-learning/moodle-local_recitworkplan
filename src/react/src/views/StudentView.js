@@ -43,7 +43,7 @@ export class StudentView extends Component {
                 {this.state.showHeader && 
                     <div className='d-flex' style={{justifyContent: "space-between"}}>
                         <div className='d-flex' style={{alignItems: "center"}}>
-                            <span className='h1 mr-3'>Plans de travail</span>
+                            <span className='h1 me-3'>Plans de travail</span>
                         </div>
                         <div>
                             <ToggleButtons name="completionState" onChange={(e) => this.onCompletionStateChange(e)} type="radio" value={this.state.activeTab} options={
@@ -301,7 +301,7 @@ export class StudentTemplateDetail extends Component {
         let rythmeColor = StudentTemplateTile.getProgressBarRythmColor(data, assignment);
 
         let main = <>
-        <CustomHeader btnBefore={<CustomButton className="mr-1" title="Revenir" onClick={this.props.onBack} faIcon={faArrowLeft}/>} btnAfter={<CustomButton title="Rafraichir" onClick={() => this.getData()} faIcon={faSync}/>}/>
+        <CustomHeader btnBefore={<CustomButton className="me-1" title="Revenir" onClick={this.props.onBack} faIcon={faArrowLeft}/>} btnAfter={<CustomButton title="Rafraichir" onClick={() => this.getData()} faIcon={faSync}/>}/>
             <CustomCard progressColor={rythmeColor} progressText={progressText} progressValue={`${progressValue}%`}>
                 <div className='mb-3'>
                     <div className='h4'>{data.template.name}</div>

@@ -3,7 +3,7 @@
     <library>
         <location>react/</location>
         <name>React</name>
-        <version>18.2.0</version>
+        <version>19.2.4</version>
         <license>Apache</license>
         <licenseversion>2.0</licenseversion>
     </library>

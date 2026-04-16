@@ -206,7 +206,7 @@ export class CustomHeader extends Component{
         <div className='d-flex d-block-mobile flex-wrap' style={{justifyContent: "space-between", alignItems: "center"}}>
             <div className='d-flex' style={{alignItems: "center"}}>
                 {this.props.btnBefore}
-                {this.props.title.length > 0 && <span className='h2 mr-3 ml-3'>{this.props.title}</span>}
+                {this.props.title.length > 0 && <span className='h2 me-3 ms-3'>{this.props.title}</span>}
                 {this.props.btnAfter}
             </div>
             <div>
@@ -309,7 +309,7 @@ export class CustomBadgeCompletion extends Component{
         let main = 
             <span title={this.props.title}  className={this.props.className}>
                 <span className="text-muted">{this.props.label}</span>
-                <span className='ml-2 mr-2 text-muted'>
+                <span className='ms-2 me-2 text-muted'>
                     <b>{`${this.props.stats} `}</b>
                     <FontAwesomeIcon className='text-success' icon={faCheck}/>
                 </span>
