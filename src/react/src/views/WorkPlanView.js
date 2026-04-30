@@ -672,7 +672,7 @@ class WorkPlanAssignmentsView extends Component{
                 </div>
                 {this.state.showAssignments && <ModalAssignmentPicker data={data} onClose={(refresh) => this.onShowAssignments(false, refresh)}/>}
                 {this.state.editAssignment !== null && <ModalAssignmentForm metadata={data.template} data={this.state.editAssignment} onClose={(refresh) => this.onShowAssignments(false, refresh)}/>}
-                {this.state.showAssignmentMassActions !== null && <ModalAssignmentMassActions data={data} onClose={(refresh) => this.onShowAssignments(false, refresh)}/>}
+                {this.state.showAssignmentMassActions !== null && <ModalAssignmentMassActions data={data} onClose={(refresh) => this.onShowAssignments(false, refresh)} onRefresh={this.props.onRefresh}/>}
                 {this.state.editAssignmentAdditionalHours !== null && <ModalAssignmentAdditionalHoursForm templateId={data.template.id} data={this.state.editAssignmentAdditionalHours} onClose={(refresh) => this.onShowAssignments(false, refresh)}/>}
                 {this.state.showAssignmentAdditionalHours !== null && <ModalAssignmentAdditionalHoursHistory data={this.state.showAssignmentAdditionalHours} onClose={(refresh) => this.onShowAssignments(false, refresh)}/>}
             </>;

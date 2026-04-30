@@ -299,7 +299,8 @@ export class ModalAssignmentPicker extends Component{
 export class ModalAssignmentMassActions extends Component{
     static defaultProps = {        
         data: null,
-        onClose: null
+        onClose: null,
+        onRefresh: null
     };
 
     constructor(props){
@@ -375,15 +376,15 @@ export class ModalAssignmentMassActions extends Component{
     }
 
     onAssign(){
-        this.setState({dataChanged: true});
+        this.setState({dataChanged: true}, this.props.onRefresh);
     }
 
     onClose(){
         if(this.state.dataChanged){
-            $glVars.webApi.processWorkPlan(this.props.data.template.id, () => this.props.onClose(this.state.dataChanged));
+            $glVars.webApi.processWorkPlan(this.props.data.template.id, () => this.props.onClose(true));
         }
         else{
-            this.props.onClose(this.state.dataChanged);
+            this.props.onClose(false);
         }
     }
 }
