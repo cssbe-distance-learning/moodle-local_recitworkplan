@@ -1003,9 +1003,10 @@ class Template{
     public $lastUpdate = null;
     //@array of TemplateActivity
     public $activities = array();
-    public $options = array('showHoursLate' => false, 'showCategory' => true, 'showStudentWorkPlan' => '0');
+    public $options = null;
 
     public function __construct(){
+        $this->options = new TemplateOptions();
     }
  
     public static function create($dbData){
@@ -1025,12 +1026,9 @@ class Template{
         if (isset($dbData->has_access)) $result->hasAccess = $dbData->has_access;
         if (isset($dbData->templateoptions)){
             try {
-                $result->options = json_decode($dbData->templateoptions);
-
-                // set default value
-                if(!isset($result->options->showStudentWorkPlan)){
-                    $result->options->showStudentWorkPlan = '0';
-                }
+                $result->options = new TemplateOptions();
+                $tmp = json_decode($dbData->templateoptions);
+                Utils::copySharedAttributes($tmp, $result->options);
 
             }catch(\Exception $e){
             }
@@ -1084,6 +1082,13 @@ class Template{
             }
         );
     }
+}
+
+class TemplateOptions{
+    public $showHoursLate = false;
+    public $showCategory = true;
+    public $showStudentWorkPlan = '0';
+    public $userLimitWorkPlan = 35;
 }
 
 class TemplateActivity{
@@ -1415,4 +1420,15 @@ class MoodleCourseModule {
 
 function orderStudentsByFullname($a, $b) {
     return strnatcasecmp("{$a->user->fullname}", "{$b->user->fullname}");
+}
+
+class Utils{
+    static function copySharedAttributes(object $source, object $target): object {
+        foreach ($source as $key => $value) {
+            if (property_exists($target, $key)) {
+                $target->$key = $value;
+            }
+        }
+        return $target;
+    }
 }

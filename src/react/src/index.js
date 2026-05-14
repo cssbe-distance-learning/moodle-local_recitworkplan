@@ -89,4 +89,3 @@ document.addEventListener('DOMContentLoaded', function(e){
         root.render(<App signedUser={signedUser} mode={domContainer.getAttribute('data-mode')} workPlanId={parseInt(domContainer.getAttribute('data-workplanid'))}/>);
     }
 }, false);
-console.log("a")

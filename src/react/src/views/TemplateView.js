@@ -790,6 +790,13 @@ class ModalTemplateOptionForm extends Component{
                                 ]}/>
                 </Col>
             </Form.Group>
+            <Form.Group className='mb-3' as={Row}>
+                <Form.Label column sm="6">{"Nombre maximum d’étudiants par plan de travail"}</Form.Label>
+                <Col sm="6">
+                    <InputNumber min={1} max={100} nbDecimals={0} onChange={this.onDataChange} value={data.template.options.userLimitWorkPlan} name='userLimitWorkPlan'/>                    
+                </Col>
+                <Form.Text className="text-muted">Veuillez noter que plus le <strong>nombre d’étudiants assignés</strong> à un plan de travail est élevé, combiné au <strong>nombre d’activités</strong>, plus cela peut entraîner un <strong>ralentissement du système</strong>.</Form.Text>
+            </Form.Group>
         </Form>;
 
         let modalFooter = 
@@ -822,6 +829,12 @@ class ModalTemplateOptionForm extends Component{
 
     onSave(){
         let that = this;
+
+        if(parseFloat(this.state.data.template.options.userLimitWorkPlan) < this.state.data.assignments.length){
+            $glVars.feedback.showWarning($glVars.i18n.tags.appName, "Votre nombre d’affectations dépasse le nombre maximum d’étudiants permis par le plan de travail.");
+            return;
+        }
+
         let callback = function(result){
             if(!result.success){
                 $glVars.feedback.showError($glVars.i18n.tags.appName, result.msg);

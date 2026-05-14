@@ -21,7 +21,6 @@ export class ToggleButtons extends Component {
     }
 
     render() {       
-        console.log(this.props.value)  
         let main =  
             <ButtonToolbar style={this.props.style} data-read-only={(this.props.disabled ? 1 : 0)}>                        
                 <ToggleButtonGroup size={this.props.bsSize} type={this.props.type} name={this.props.name} defaultValue={this.props.defaultValue} value={this.props.value} onChange={this.onChange}>                                

@@ -142,7 +142,7 @@ export class ModalAssignmentPicker extends Component{
                     </div>
                     <div className='col-lg-6'>
                         <div>
-                            <h6>Élèves assignés <Badge variant="warning" className="p-2 rounded">{this.state.data.assignments.length}/{Options.MAX_AFFECTATIONS}</Badge></h6>
+                            <h6>Élèves assignés <Badge variant="warning" className="p-2 rounded">{this.state.data.assignments.length}/{this.state.data.template.options.userLimitWorkPlan}</Badge></h6>
                             <div style={{maxHeight: 500, overflowY: 'scroll', scrollbarWidth: 'thin'}}>
                                 <Table striped bordered hover>
                                     <tbody>
@@ -213,8 +213,8 @@ export class ModalAssignmentPicker extends Component{
     }
 
     onAdd(item){
-        if (this.state.data.assignments.length >= Options.MAX_AFFECTATIONS){
-            $glVars.feedback.showInfo($glVars.i18n.tags.appName, 'Vous avez atteint la limite d\'affectations.', 3);
+        if (this.state.data.assignments.length >= this.state.data.template.options.userLimitWorkPlan){
+            $glVars.feedback.showWarning($glVars.i18n.tags.appName, 'Vous avez atteint la limite d\'affectations.', 3);
             return;
         }
         let newItems = [this.createNewAssignment(item)]
@@ -228,8 +228,8 @@ export class ModalAssignmentPicker extends Component{
         for (let item of studentList){
             newItems.push(this.createNewAssignment(item));
         }
-        if ((newItems.length + this.state.data.assignments.length) >= Options.MAX_AFFECTATIONS){
-            $glVars.feedback.showInfo($glVars.i18n.tags.appName, 'Vous avez atteint la limite d\'affectations.', 3);
+        if ((newItems.length + this.state.data.assignments.length) >= this.state.data.template.options.userLimitWorkPlan){
+            $glVars.feedback.showWarning($glVars.i18n.tags.appName, 'Vous avez atteint la limite d\'affectations.', 3);
             return;
         }
         this.setState({flags: {dataChanged: true}}, () => this.onSave(newItems))
