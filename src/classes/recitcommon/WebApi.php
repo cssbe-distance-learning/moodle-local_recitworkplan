@@ -117,13 +117,24 @@ abstract class AWebApi
         return true;
     }
 
+    protected function getAllowedServices() {
+        return [];
+    }
+
     public function processRequest(){
         if(!$this->preProcessRequest()){
             return;
         }
 
         $serviceWanted = clean_param($this->request['service'], PARAM_TEXT);
-		$result = $this->$serviceWanted($this->request);	
+
+        $allowed = $this->getAllowedServices();
+        if (!empty($allowed) && !in_array($serviceWanted, $allowed, true)) {
+            $this->lastResult = new WebApiResult(false, null, get_string('servicenotfound', 'local_recitworkplan'));
+            return;
+        }
+
+        $result = $this->$serviceWanted($this->request);
 
         $this->lastResult = $result;
     }

@@ -16,7 +16,7 @@
 
 /**
  * @package   local_recitworkplan
- * @copyright 2019 RÉCIT 
+ * @copyright 2019 RÉCIT
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,12 +38,6 @@ class provider implements
         \core_privacy\local\request\core_userlist_provider,
         \core_privacy\local\request\plugin\provider {
 
-    /**
-     * Returns meta data about this system.
-     *
-     * @param   collection $collection The initialised collection to add items to.
-     * @return  collection     A listing of user data stored through this system.
-     */
     public static function get_metadata(collection $collection) : collection {
         $collection->add_database_table(
             'recit_wp_tpl',
@@ -86,16 +80,9 @@ class provider implements
             'privacy:metadata:recit_wp_additional_hours'
         );
 
-
         return $collection;
     }
 
-    /**
-     * Get the list of contexts that contain user information for the specified user.
-     *
-     * @param   int $userid The user to search.
-     * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
-     */
     public static function get_contexts_for_userid(int $userid) : contextlist {
         $params = ['userid' => $userid, 'contextuser' => CONTEXT_USER];
         $sql = "SELECT id
@@ -103,15 +90,9 @@ class provider implements
                  WHERE instanceid = :userid and contextlevel = :contextuser";
         $contextlist = new contextlist();
         $contextlist->add_from_sql($sql, $params);
-        //Templates aren't tied to any context
         return $contextlist;
     }
 
-    /**
-     * Get the list of users within a specific context.
-     *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
-     */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
@@ -127,145 +108,140 @@ class provider implements
         $userlist->add_from_sql('userid', $sql, $params);
     }
 
-    /**
-     * Export all user data for the specified user, in the specified contexts.
-     *
-     * @param   approved_contextlist $contextlist The approved contexts to export information for.
-     */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
 
-        // If the user has repository_instances data, then only the User context should be present so get the first context.
         $contexts = $contextlist->get_contexts();
         if (count($contexts) == 0) {
             return;
         }
         $context = reset($contexts);
 
-        // Sanity check that context is at the User context level, then get the userid.
         if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
         $userid = $context->instanceid;
 
-        $sql = "SELECT *
-                  FROM {recit_wp_tpl_assign}
-                 WHERE userid = :userid";
+        $subcontext = [get_string('pluginname', 'local_recitworkplan')];
 
-        $params = [
-            'userid' => $userid
-        ];
-
-        $instances = $DB->get_records_sql($sql, $params);
-
+        // Student assignments.
+        $instances = $DB->get_records_sql(
+            "SELECT * FROM {recit_wp_tpl_assign} WHERE userid = :userid",
+            ['userid' => $userid]
+        );
         foreach ($instances as $instance) {
-            $subcontext = [
-                get_string('pluginname', 'local_recitdashboard')
-            ];
-
             writer::with_context($context)->export_data($subcontext, $instance);
         }
 
-        //Teachers
-        $sql = "SELECT *
-                  FROM {recit_wp_tpl}
-                 WHERE creatorid = :userid";
-
-        $params = [
-            'userid' => $userid
-        ];
-
-        $instances = $DB->get_records_sql($sql, $params);
-
+        // Templates created by this user.
+        $instances = $DB->get_records_sql(
+            "SELECT * FROM {recit_wp_tpl} WHERE creatorid = :userid",
+            ['userid' => $userid]
+        );
         foreach ($instances as $instance) {
-            $subcontext = [
-                get_string('pluginname', 'local_recitdashboard')
-            ];
+            writer::with_context($context)->export_data($subcontext, $instance);
+        }
 
+        // Additional hours added by this user (as teacher/assignor).
+        $instances = $DB->get_records_sql(
+            "SELECT * FROM {recit_wp_additional_hours} WHERE assignorid = :userid",
+            ['userid' => $userid]
+        );
+        foreach ($instances as $instance) {
             writer::with_context($context)->export_data($subcontext, $instance);
         }
     }
 
-    /**
-     * Delete all data for all users in the specified context.
-     *
-     * @param   context $context The specific context to delete data for.
-     */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
-        // Sanity check that context is at the User context level, then get the userid.
         if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
         $userid = $context->instanceid;
 
-        // Delete the records created for the userid.
-        $DB->delete_records('recit_wp_tpl_assign', ['userid' => $userid]);
-        $rst = $DB->get_records('recit_wp_tpl', ['creatorid' => $userid]);
-        if (!empty($rst)){
-            foreach ($rst as $plan){
-                self::deletePlan($plan->id);
-            }
-        }
+        self::deleteUserData($DB, $userid);
     }
 
-    /**
-     * Delete multiple users within a single context.
-     *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
-     */
     public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
 
         $context = $userlist->get_context();
 
         if ($context instanceof \context_user) {
-            $userid = $context->instanceid;
-            $DB->delete_records('recit_wp_tpl_assign', ['userid' => $userid]);
-            $rst = $DB->get_records('recit_wp_tpl', ['creatorid' => $userid]);
-            if (!empty($rst)){
-                foreach ($rst as $plan){
-                    self::deletePlan($plan->id);
-                }
-            }
+            self::deleteUserData($DB, $context->instanceid);
         }
     }
 
-    /**
-     * Delete all user data for the specified user, in the specified contexts.
-     *
-     * @param   approved_contextlist $contextlist The approved contexts and user information to delete information for.
-     */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
 
-        // If the user has data, then only the User context should be present so get the first context.
         $contexts = $contextlist->get_contexts();
         if (count($contexts) == 0) {
             return;
         }
         $context = reset($contexts);
 
-        // Sanity check that context is at the User context level, then get the userid.
         if ($context->contextlevel !== CONTEXT_USER) {
             return;
         }
         $userid = $context->instanceid;
 
+        self::deleteUserData($DB, $userid);
+    }
+
+    /**
+     * Delete all personal data for a user: assignments, additional hours, created
+     * templates, and presence in collaborator lists.
+     */
+    protected static function deleteUserData($DB, $userid) {
+        // Delete additional hours linked to the user's own assignments.
+        $DB->execute(
+            "DELETE FROM {recit_wp_additional_hours}
+              WHERE assignmentid IN (SELECT id FROM {recit_wp_tpl_assign} WHERE userid = ?)",
+            [$userid]
+        );
+
+        // Delete the user's assignments.
         $DB->delete_records('recit_wp_tpl_assign', ['userid' => $userid]);
-        $rst = $DB->get_records('recit_wp_tpl', ['creatorid' => $userid]);
-        if (!empty($rst)){
-            foreach ($rst as $plan){
-                self::deletePlan($plan->id);
+
+        // Delete additional hours entries where this user is the assignor/teacher.
+        $DB->delete_records('recit_wp_additional_hours', ['assignorid' => $userid]);
+
+        // Delete calendar events for this user.
+        $DB->delete_records('event', ['userid' => $userid, 'eventtype' => 'planformation']);
+
+        // Delete templates created by this user (and their activities/assignments).
+        $templates = $DB->get_records('recit_wp_tpl', ['creatorid' => $userid]);
+        foreach ($templates as $plan) {
+            self::deletePlan($plan->id);
+        }
+
+        // Remove this user from the collaboratorids list of any templates they appear in.
+        self::removeFromCollaborators($DB, $userid);
+    }
+
+    /**
+     * Remove a user ID from the comma-separated collaboratorids field of all templates.
+     */
+    protected static function removeFromCollaborators($DB, $userid) {
+        $templates = $DB->get_records_sql(
+            "SELECT id, collaboratorids FROM {recit_wp_tpl} WHERE collaboratorids != '' AND collaboratorids IS NOT NULL"
+        );
+        foreach ($templates as $template) {
+            $ids = array_filter(array_map('intval', explode(',', $template->collaboratorids)));
+            if (in_array((int)$userid, $ids)) {
+                $newIds = array_values(array_filter($ids, function($id) use ($userid) {
+                    return $id !== (int)$userid;
+                }));
+                $DB->set_field('recit_wp_tpl', 'collaboratorids', implode(',', $newIds), ['id' => $template->id]);
             }
         }
     }
 
-    public static function deletePlan($id){
+    public static function deletePlan($id) {
         global $DB, $USER;
-        $ctrl = PersistCtrl::getInstance($DB, $USER);
+        $ctrl = \recitworkplan\PersistCtrl::getInstance($DB, $USER);
         return $ctrl->deleteWorkPlan($id);
     }
-
 }

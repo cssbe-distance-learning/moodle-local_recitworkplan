@@ -31,11 +31,23 @@ use stdClass;
 class WebApi extends MoodleApi
 {
     protected $ctrl = null;
-    
+
     public function __construct($DB, $COURSE, $USER){
         parent::__construct($DB, $COURSE, $USER);
         $this->ctrl = PersistCtrl::getInstance($DB, $USER);
     }
+
+    protected function getAllowedServices() {
+        return [
+            'getWorkPlanList', 'getWorkPlan', 'getWorkPlanFormKit',
+            'deleteWorkPlan', 'getStudentList', 'getTeacherList',
+            'saveAssignment', 'deleteAssignment', 'getAssignmentAdditionalHours',
+            'addAssignmentAdditionalHours', 'getCatCourseSectionActivityList',
+            'getTemplateFormFormKit', 'saveTemplate', 'cloneTemplate',
+            'saveTplAct', 'saveTplActOrder', 'deleteTplAct', 'processWorkPlan',
+        ];
+    }
+
     /**
      * $level [a = admin | s = student]
      */
@@ -63,18 +75,21 @@ class WebApi extends MoodleApi
             $forStudent = boolval($request['forStudent']);
             $limit = clean_param($request['limit'], PARAM_INT);
             $offset = clean_param($request['offset'], PARAM_INT);
-            $userId = clean_param($request['userId'], PARAM_INT);
-            $userId = ($userId == 0 ? $this->signedUser->id : $userId);
-            
+
             $orderBy = null;
             if(isset($request['orderBy'])){
                 $orderBy = clean_param($request['orderBy'], PARAM_TEXT);
                 $orderBy = explode(",", $orderBy);
             }
-            
 
-            if (!$forStudent){
+            if ($forStudent){
+                // Students may only retrieve their own workplan list
+                $userId = $this->signedUser->id;
+                $this->canUserAccess('s');
+            } else {
                 $this->canUserAccess('a');
+                $userId = clean_param($request['userId'], PARAM_INT);
+                $userId = ($userId == 0 ? $this->signedUser->id : $userId);
             }
 
             if($state == 'template'){
@@ -99,8 +114,13 @@ class WebApi extends MoodleApi
             $studentId = clean_param($request['studentId'], PARAM_INT);
             $userId = ($studentId == 0 ? $this->signedUser->id : $studentId);
 
-            $this->canUserAccess('s'); 
-            
+            // Only teachers may request another user's workplan
+            if ($studentId > 0 && $studentId != $this->signedUser->id) {
+                $this->canUserAccess('a');
+            } else {
+                $this->canUserAccess('s');
+            }
+
             $result = $this->ctrl->getWorkPlan($userId, $templateId, ($studentId > 0));
 
             $this->prepareJson($result);
@@ -185,6 +205,18 @@ class WebApi extends MoodleApi
             $result = array();
 
             foreach ($data as $item){
+                $item->id           = clean_param($item->id           ?? 0, PARAM_INT);
+                $item->templateId   = clean_param($item->templateId   ?? 0, PARAM_INT);
+                $item->nbHoursPerWeek = clean_param($item->nbHoursPerWeek ?? 0, PARAM_FLOAT);
+                $item->startDate    = clean_param($item->startDate    ?? 0, PARAM_INT);
+                $item->endDate      = clean_param($item->endDate      ?? 0, PARAM_INT);
+                $item->comment      = clean_param($item->comment      ?? '', PARAM_TEXT);
+                if (isset($item->completionState)) {
+                    $item->completionState = clean_param($item->completionState, PARAM_INT);
+                }
+                if (isset($item->user)) {
+                    $item->user->id = clean_param($item->user->id ?? 0, PARAM_INT);
+                }
                 $result[] = $this->ctrl->saveAssignment($item);
                 if ($calendar == 'update'){
                     $this->ctrl->deleteCalendarEvent($item->id, $item->user->id);
@@ -234,6 +266,10 @@ class WebApi extends MoodleApi
             $result = array();
 
             foreach ($data as $item){
+                $item->id                   = clean_param($item->id                   ?? 0, PARAM_INT);
+                $item->templateId           = clean_param($item->templateId           ?? 0, PARAM_INT);
+                $item->nbAdditionalHours    = clean_param($item->nbAdditionalHours    ?? 0, PARAM_FLOAT);
+                $item->additionalHoursReason = clean_param($item->additionalHoursReason ?? '', PARAM_TEXT);
                 $result[] = $this->ctrl->addAssignmentAdditionalHours($item);
             }
 
@@ -296,6 +332,18 @@ class WebApi extends MoodleApi
 
             $data = json_decode(json_encode($request['data']), FALSE);
 
+            $data->id               = clean_param($data->id               ?? 0,   PARAM_INT);
+            $data->name             = clean_param($data->name             ?? '',   PARAM_TEXT);
+            $data->description      = clean_param($data->description      ?? '',   PARAM_CLEANHTML);
+            $data->communicationUrl = clean_param($data->communicationUrl ?? '',   PARAM_URL);
+            $data->state            = clean_param($data->state            ?? 0,   PARAM_INT);
+            $data->type             = clean_param($data->type             ?? 'd',  PARAM_ALPHA);
+            if (!empty($data->collaboratorList)) {
+                foreach ($data->collaboratorList as $u) {
+                    $u->userId = clean_param($u->userId ?? 0, PARAM_INT);
+                }
+            }
+
             $result = $this->ctrl->saveTemplate($data);
 
             return new WebApiResult(true, $result);
@@ -310,6 +358,8 @@ class WebApi extends MoodleApi
             $this->canUserAccess('a');
             $templateId = clean_param($request['templateId'], PARAM_INT);
             $options = json_decode(json_encode($request['options']), FALSE);
+            $options->state             = clean_param($options->state            ?? 0, PARAM_INT);
+            $options->keepCollaborators = (bool)($options->keepCollaborators     ?? false);
             $result = $this->ctrl->cloneTemplate($templateId, $options);
             return new WebApiResult(true, array('id' => $result));
         }
@@ -323,6 +373,12 @@ class WebApi extends MoodleApi
             $this->canUserAccess('a');
 
             $data = json_decode(json_encode($request['data']), FALSE);
+
+            $data->id               = clean_param($data->id               ?? 0, PARAM_INT);
+            $data->templateId       = clean_param($data->templateId       ?? 0, PARAM_INT);
+            $data->cmId             = clean_param($data->cmId             ?? 0, PARAM_INT);
+            $data->slot             = clean_param($data->slot             ?? 0, PARAM_INT);
+            $data->nbHoursCompletion = clean_param($data->nbHoursCompletion ?? 0, PARAM_FLOAT);
 
             $result = $this->ctrl->saveTplAct($data);
 

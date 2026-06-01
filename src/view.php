@@ -44,14 +44,15 @@ class MainView{
         $this->output = $output;
     }
 
-    public function display(){    
+    public function display(){
         $studentId = $this->user->id;
         $mode = $this->isTeacher() ? 'a' : 's';
         $workplanId = 0;
         if (isset($_GET['id'])){
-            $workplanId = $_GET['id'];
+            $workplanId = clean_param($_GET['id'], PARAM_INT);
         }
-        echo sprintf("<div id='recit_workplan' class='recit_workplan' data-user-id='%ld' data-mode='%s' data-workplanid='%s'></div>", $studentId, $mode, $workplanId);
+        echo sprintf("<div id='recit_workplan' class='recit_workplan' data-user-id='%d' data-mode='%s' data-workplanid='%d'></div>",
+            $studentId, $mode, $workplanId);
     }
 
     public function isTeacher(){

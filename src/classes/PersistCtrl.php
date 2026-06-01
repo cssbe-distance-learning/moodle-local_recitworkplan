@@ -266,9 +266,7 @@ class PersistCtrl extends MoodlePersistCtrl
             if($data->id == 0){
                 $values['creatorid'] = $this->signedUser->id;
 
-                $this->mysqlConn->insert_record("recit_wp_tpl", $values);
-
-                $templateId = $this->mysqlConn->get_record_sql("select id from {recit_wp_tpl} order by id desc limit 1")->id;
+                $templateId = $this->mysqlConn->insert_record("recit_wp_tpl", $values);
             }
             else{
                 $values['id'] = $data->id;
@@ -284,16 +282,21 @@ class PersistCtrl extends MoodlePersistCtrl
 
     public function cloneTemplate($templateId, $options){
         try{
-            $state = (is_numeric($options->state) ? $options->state : 'state');
+            $templateId      = intval($templateId);
+            $state           = intval($options->state);
             $collaboratorids = ($options->keepCollaborators ? 'collaboratorids' : "''");
-            
-            $query = "insert into {recit_wp_tpl} (creatorid, collaboratorids, name, description, communication_url, lastupdate, state, tpltype, options) 
-                        select {$this->signedUser->id}, $collaboratorids, ". $this->mysqlConn->sql_concat('name', "'".get_string('cloned', 'local_recitworkplan')."'").", description, 
+
+            $query = "insert into {recit_wp_tpl} (creatorid, collaboratorids, name, description, communication_url, lastupdate, state, tpltype, options)
+                        select {$this->signedUser->id}, $collaboratorids, ". $this->mysqlConn->sql_concat('name', "'".get_string('cloned', 'local_recitworkplan')."'").", description,
                         communication_url, " . time() . ", $state, tpltype, options from {recit_wp_tpl} where id = $templateId";
 
             $this->execSQL($query);
-            $newTemplateId = $this->mysqlConn->get_record_sql("select id from {recit_wp_tpl} order by id desc limit 1")->id;
+            $newTemplateId = $this->mysqlConn->get_record_sql(
+                "select id from {recit_wp_tpl} where creatorid = ? order by id desc limit 1",
+                [$this->signedUser->id]
+            )->id;
 
+            $newTemplateId = intval($newTemplateId);
             $query = "insert into {recit_wp_tpl_act} (templateid, cmid, nb_hours_completion, slot) select $newTemplateId, cmid, nb_hours_completion, slot from {recit_wp_tpl_act} where templateid = $templateId";
             $this->execSQL($query);
 
@@ -430,7 +433,7 @@ class PersistCtrl extends MoodlePersistCtrl
             $args['userid'] = $userId;
         }
 
-        $tmpTableName = "tmlworkplan_$templateId"."_$userId";
+        $tmpTableName = "tmlworkplan_" . intval($templateId) . "_" . intval($userId);
 
         $query = "select t1.nb_hours_per_week nbhoursperweek,
         t1.completionstate wpcompletionstate, t2.id templateid, t2.creatorid creatorid, t3.cmid, t3.nb_hours_completion nbhourscompletion,
@@ -503,6 +506,7 @@ class PersistCtrl extends MoodlePersistCtrl
 
     public function getWorkFollowUpStmt($templateId){
         global $CFG;
+        $templateId = intval($templateId);
         /* Followup
             1 = à corriger
             2 = rétroaction
@@ -553,6 +557,7 @@ class PersistCtrl extends MoodlePersistCtrl
     }
 
     public function getWorkGradeStmt($templateId){
+        $templateId = intval($templateId);
         $stmt = "SELECT t3.id cmid, t2.userid, t2.finalgrade, ". $this->mysqlConn->sql_concat('ROUND(t2.rawgrade,2)',"'/'",'ROUND(t2.rawgrademax,2)')." grade, t1.itemname, (case when t2.finalgrade is null then -1 else (case when t2.finalgrade >= t1.gradepass then 1 else 0 end) end) passed 
         FROM {grade_items} t1
         INNER JOIN {grade_grades} t2 ON t2.itemid = t1.id and t1.itemtype = 'mod'
@@ -564,6 +569,7 @@ class PersistCtrl extends MoodlePersistCtrl
     }
 
     public function getWorkPlan($userId, $templateId, $isStudent = false){
+        $userId = intval($userId);
         $roles = array(RECITWORKPLAN_ASSIGN_CAPABILITY, RECITWORKPLAN_MANAGE_CAPABILITY);
         $where = "";
 
@@ -636,6 +642,7 @@ class PersistCtrl extends MoodlePersistCtrl
 
     public function getWorkPlanList($userId, $limit = 0, $offset = 0, $state = 'ongoing', $forStudent = false, $orderBy = null){
         global $DB;
+        $userId = intval($userId);
         $whereaccess = "true";
         $where = "";
         if ($state == 'ongoing'){
@@ -643,7 +650,7 @@ class PersistCtrl extends MoodlePersistCtrl
         }else if ($state == 'archive'){
             $whereaccess .= " and (t1.completionstate = 1 and t2.state = 0)";
         }
-        
+
         $capabilities = array();
         $capabilitySmt = "";
         if ($forStudent){
@@ -934,8 +941,8 @@ class PersistCtrl extends MoodlePersistCtrl
         if ($workPlan == null){ return; }
         if ($workPlan->template == null){ return; }
 
-        $name = "Fin du plan ".$workPlan->template->name;
-        $desc = "<a href='".$CFG->wwwroot."/local/recitworkplan/view.php'>".$name."</a>"; 
+        $name = "Fin du plan " . s($workPlan->template->name);
+        $desc = "<a href='" . s($CFG->wwwroot) . "/local/recitworkplan/view.php'>" . $name . "</a>";
         
         if (!isset($workPlan->assignments[0]->endDate)){ return; } 
 
@@ -1053,7 +1060,12 @@ class Template{
 
     public function loadCollaborators($collaborators){
         global $DB;
-        $rst = $DB->get_records_sql("select * from {user} where id in ($collaborators)");
+        $ids = array_values(array_filter(array_map('intval', explode(',', $collaborators))));
+        if (empty($ids)) {
+            return;
+        }
+        list($insql, $inparams) = $DB->get_in_or_equal($ids);
+        $rst = $DB->get_records_sql("select * from {user} where id $insql", $inparams);
         foreach ($rst as $user){
             $collaborator = new stdClass();
             $collaborator->userId = $user->id;
