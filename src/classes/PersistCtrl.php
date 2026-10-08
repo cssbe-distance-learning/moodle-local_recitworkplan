@@ -562,7 +562,7 @@ class PersistCtrl extends MoodlePersistCtrl
         FROM {grade_items} t1
         INNER JOIN {grade_grades} t2 ON t2.itemid = t1.id and t1.itemtype = 'mod'
         INNER JOIN {course_modules} t3 ON t1.iteminstance = t3.instance and t1.courseid = t3.course and t3.module = (select id from {modules} where name = t1.itemmodule)
-        where t3.id in (select cmid from {recit_wp_tpl_act} where templateid = $templateId) and t1.gradepass > 0 and t2.rawgrade is not null order by t2.id desc
+        where t3.id in (select cmid from {recit_wp_tpl_act} where templateid = $templateId) and t1.gradepass >= 0 and t2.rawgrade is not null order by t2.id desc
         ";
          
         return $stmt;
