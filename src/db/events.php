@@ -20,17 +20,13 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$observers = array (
-    array (
-         'eventname'      => 'core\event\course_module_completion_updated',
-         'callback'  => 'recitworkplan_course_module_completion_updated_event',
-         'includefile' => 'local/recitworkplan/lib.php',
-         'internal'    => false,
-    ),
-    array (
-        'eventname'      => 'core\event\course_module_deleted',
-        'callback'  => 'recitworkplan_course_module_deleted_event',
-        'includefile' => 'local/recitworkplan/lib.php',
-        'internal'    => false,
-   )
-);
+$observers = [
+    [
+        'eventname' => '\\core\\event\\course_module_completion_updated',
+        'callback'  => '\\local_recitworkplan\\observer::course_module_completion_updated',
+    ],
+    [
+        'eventname' => '\\core\\event\\course_module_deleted',
+        'callback'  => '\\local_recitworkplan\\observer::course_module_deleted',
+    ],
+];
